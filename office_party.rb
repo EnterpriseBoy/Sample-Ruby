@@ -3,31 +3,45 @@ require 'json'
 
 
 def office_location
+  #Setting the escape character
+  esc_char = 'n'
+  #Google Api key
   apiKey =  'AIzaSyC5KvElpTjIwg8-z2RkUsL-Agfbt023qlE'
-  puts "Please enter your city name :"
-  city_name = gets
-  city_name = city_name.chomp
-
-  puts "Please enter your company name :"
-  company_name = gets
-  company_name = company_name.chomp
-
-
-  #URI that will be opened 
-  request_uri = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=" +company_name+"+in+"+city_name+"&key="+apiKey.to_s 
-  #Results from the URI
-  uri_results = open(request_uri).read
-  #Parsing the results to JSON
-  json_results= JSON.parse(uri_results)
-  json_results["results"].each do |company_list|
-    #puts "Comapny Name:              "+company_list["name"].to_s
-    #puts "Comapny Address:           "+company_list["formatted_address"].to_s
-    #puts "Comapny Address Latitude:  "+company_list["geometry"]["location"]["lat"].to_s
-    #puts "Comapny Address Longitude:  "+company_list["geometry"]["location"]["lng"].to_s
-    array_to_return = Array.new
-    array_to_return << company_list["geometry"]["location"]["lat"]
-    array_to_return << company_list["geometry"]["location"]["lng"]
-    return array_to_return
+  #Loop if the user puts in a wrong address
+  while esc_char.eql? "n"
+    
+    puts "Please enter your city name :"
+    city_name = gets
+    city_name = city_name.chomp
+    
+    puts "Please enter your company name :"
+    company_name = gets
+    company_name = company_name.chomp
+    #Catching errors of an incorrect address being put in
+    begin
+      #URI that will be opened 
+      request_uri = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=" +company_name+"+in+"+city_name+"&key="+apiKey.to_s 
+      #Results from the URI
+      uri_results = open(request_uri).read
+      #Parsing the results to JSON
+      json_results= JSON.parse(uri_results)
+      json_results["results"].each do |company_list|
+        array_to_return = Array.new
+        array_to_return << company_list["geometry"]["location"]["lat"]
+        array_to_return << company_list["geometry"]["location"]["lng"]
+        
+        puts "Company name    " +company_list["name"].to_s
+        puts "Company Address " +company_list["formatted_address"].to_s
+        print "If this is the correct address press 'y'?"
+        esc_char = gets
+        esc_char = esc_char.chomp
+        if esc_char == "y"
+          return array_to_return
+        end
+      end
+    rescue
+      puts "That Office does not exist, please enter another location"
+    end
   end
 end
 
